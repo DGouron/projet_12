@@ -7,7 +7,8 @@ function App() {
   return (
     <Routes>
         <Route path="/" element={<Home />} />
-        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/dashboard/mock/:id" element={<Dashboard useMockedData />} />
+        <Route path="/dashboard/:id" element={<Dashboard />} />
     </Routes>
   )
 }
