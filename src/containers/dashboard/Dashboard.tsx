@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
-import { User } from '../../types/user';
 import { USER_MAIN_DATA_MOCKED } from '../../mocks/mockUserMainData';
 import Welcome from './widgets/Welcome';
-import { fetchUserMainData } from '../../helpers/api';
+import { fetchUserMainData } from '../../services/api';
+import { User, UserSchema } from '../../schema/userSchema';
 
 function Dashboard({useMockedData} : {useMockedData?: boolean}) {
   const [currentUserData, setCurrentUserData] = useState<User | undefined>(undefined);
@@ -10,8 +10,14 @@ function Dashboard({useMockedData} : {useMockedData?: boolean}) {
   const fetchUserData = async () => {
     const idFromUrl = window.location.pathname.split('/').pop();
     if (useMockedData) {    
-      const user:User|undefined  = USER_MAIN_DATA_MOCKED.find((user) => user.id === parseInt(idFromUrl || ''));
-      setCurrentUserData(user);
+      const data: unknown  = USER_MAIN_DATA_MOCKED.find((user) => user.id === parseInt(idFromUrl || ''));
+      const result = UserSchema.safeParse(data);
+
+      if (!result.success) {
+        console.error(result.error);
+        return;
+      }
+      setCurrentUserData(result.data);
     } else {
       const dataReceived = await fetchUserMainData(parseInt(idFromUrl || ''));
       setCurrentUserData(dataReceived);

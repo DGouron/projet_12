@@ -1,6 +1,4 @@
-import { User } from "../types/user";
-
-export const USER_MAIN_DATA_MOCKED: User[] = [
+export const USER_MAIN_DATA_MOCKED = [
   {
       id: 12,
       userInfos: {

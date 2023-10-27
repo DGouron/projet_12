@@ -4,3 +4,9 @@ export const fetchUserMainData = async (id: number) => {
     const data = await response.json();
     return data;
 };
+
+export const fetchUserList = async () => {
+    const response = await fetch(`${API_URL}/users`);
+    const data = await response.json();
+    return data;
+};

@@ -1,6 +1,4 @@
-import { Activity } from "../types/activity";
-
-export const USER_ACTIVITY: Activity[] = [
+export const USER_ACTIVITY = [
   {
       userId: 12,
       sessions: [

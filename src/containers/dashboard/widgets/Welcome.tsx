@@ -1,4 +1,4 @@
-import { User } from '../../../types/user'
+import { User } from "../../../schema/userSchema"
 
 function Welcome({currentUserData}: {currentUserData: User | undefined}) {
   return (
