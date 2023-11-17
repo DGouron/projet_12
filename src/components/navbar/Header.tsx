@@ -3,7 +3,7 @@ import Link from "../navigation/Link";
 
 function Header() {
   return (
-    <header className="w-full pl-7 gap-[150px] flex bg-primary shadow-layout h-24 items-center justify-start">
+    <header className="w-full pl-7 gap-[150px] flex bg-primary shadow-layout h-24 items-center justify-start fixed z-10">
       <Brand />
       <nav className="w-full flex justify-between pr-24">
         <Link href="/home" label="Accueil" />
