@@ -1,9 +1,9 @@
-import Brand from "../branding/Brand"
-import Link from "../navigation/Link"
+import Brand from "../branding/Brand";
+import Link from "../navigation/Link";
 
 function Header() {
   return (
-    <header className="w-screen pl-7 gap-[150px] flex bg-primary shadow-layout h-24 items-center justify-start">
+    <header className="w-full pl-7 gap-[150px] flex bg-primary shadow-layout h-24 items-center justify-start">
       <Brand />
       <nav className="w-full flex justify-between pr-24">
         <Link href="/home" label="Accueil" />
@@ -12,7 +12,7 @@ function Header() {
         <Link href="/community" label="Communauté" />
       </nav>
     </header>
-  )
+  );
 }
 
-export default Header
+export default Header;

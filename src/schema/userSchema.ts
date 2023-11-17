@@ -56,7 +56,7 @@ export const UserActivitySchema = z.object({
     z.object({
       day: z.string(),
       kilogram: z.number(),
-      calorie: z.number(),
+      calories: z.number(),
     })
   ),
 });

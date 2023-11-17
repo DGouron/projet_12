@@ -1,18 +1,36 @@
-import { Suspense, useEffect, useState, lazy } from "react";
+import { useEffect, useState } from "react";
 import { USER_MAIN_DATA_MOCKED } from "../../mocks/mockUserMainData";
 import Welcome from "./widgets/Welcome";
-import { fetchUserMainData } from "../../services/api";
-import { User, UserSchema } from "../../schema/userSchema";
+import {
+  fetchUserActivity,
+  fetchUserMainData,
+  fetchUserPerformance,
+} from "../../services/api";
+import {
+  User,
+  UserActivity,
+  UserPerformance,
+  UserSchema,
+} from "../../schema/userSchema";
 import { checkMockedRoute } from "../../helpers/usage";
-import { ThreeDot } from "react-loading-indicators";
+import InfoCard from "./widgets/InfoCard";
+import DailyActivity from "./widgets/DailyActivity";
+import SessionDuration from "./widgets/SessionLength";
+import Performance from "./widgets/Performance";
+import AverageScore from "./widgets/AverageScore";
 
-const DailyActivity = lazy(() => import("./widgets/DailyActivity"));
 function Dashboard() {
   const [currentUserData, setCurrentUserData] = useState<User | undefined>(
     undefined
   );
+  const [userActivity, setUserActivity] = useState<UserActivity | undefined>(
+    undefined
+  );
+  const [userPerformance, setUserPerformance] = useState<
+    UserPerformance | undefined
+  >(undefined);
 
-  const fetchUserData = async () => {
+  const handleFetchUserData = async () => {
     const idFromUrl = window.location.pathname.split("/").pop();
     if (checkMockedRoute()) {
       const data: unknown = USER_MAIN_DATA_MOCKED.find(
@@ -34,36 +52,92 @@ function Dashboard() {
     }
   };
 
-  const fetchUserActivity = async () => {
+  const handleFetchUserActivity = async () => {
     if (checkMockedRoute()) {
       console.log("mocked");
     } else {
-      console.log("not mocked");
       // add promise resolve with timeout for mocking loading
-      await new Promise((resolve) => {
-        setTimeout(() => {
-          resolve("resolved");
-        }, 10000);
-      });
-      return "data";
+      if (!currentUserData) {
+        return;
+      }
+      const parsedData = await fetchUserActivity(currentUserData.id);
+      if (parsedData && !parsedData.success) {
+        console.error(parsedData.error);
+        return;
+      } else {
+        setUserActivity(parsedData?.data);
+      }
     }
   };
-  const ActivitiesFetcher = () => {
-    const data = fetchUserActivity();
-    console.log(data);
-    return <DailyActivity />;
-  };
 
+  const handleFetchUserPerformance = async () => {
+    if (checkMockedRoute()) {
+      console.log("mocked");
+    } else {
+      // add promise resolve with timeout for mocking loading
+      if (!currentUserData) {
+        return;
+      }
+      const parsedData = await fetchUserPerformance(currentUserData.id);
+      if (parsedData && !parsedData.success) {
+        console.log("parsedData in error => ", parsedData);
+        console.error(parsedData.error);
+        return;
+      } else {
+        setUserPerformance(parsedData?.data);
+      }
+    }
+  };
   useEffect(() => {
-    fetchUserData();
+    handleFetchUserData();
   }, []);
 
+  useEffect(() => {
+    if (currentUserData) {
+      handleFetchUserActivity();
+      handleFetchUserPerformance();
+    }
+  }, [currentUserData]);
+
   return (
-    <div className="w-full h-screen ml-56 mt-14">
+    <div className="w-full h-full px-56 mt-14">
       <Welcome currentUserData={currentUserData} />
-      <Suspense fallback={<ThreeDot color={"red"} />}>
-        <ActivitiesFetcher />
-      </Suspense>
+      <div className="w-full flex flex-col xl:flex-row gap-8 mt-20">
+        <div className="flex flex-col flex-[1_1_60%] xl:flex-auto h-full">
+          <DailyActivity activityData={userActivity} />
+          <div className="flex flex-col xl:flex-row justify-between mt-8">
+            <SessionDuration />
+            {userPerformance && (
+              <Performance userPerformance={userPerformance} />
+            )}
+            {currentUserData && (
+              <AverageScore latestScore={currentUserData?.todayScore || 0} />
+            )}
+          </div>
+        </div>
+        <div className="flex flex-col flex-1">
+          <InfoCard
+            icon="calories"
+            title="Calories"
+            value={currentUserData?.keyData?.calorieCount + "kCal" || ""}
+          />
+          <InfoCard
+            icon="protein"
+            title="Protéines"
+            value={currentUserData?.keyData?.proteinCount + "g" || ""}
+          />
+          <InfoCard
+            icon="carbs"
+            title="Glucides"
+            value={currentUserData?.keyData?.carbohydrateCount + "g" || ""}
+          />
+          <InfoCard
+            icon="fat"
+            title="Lipides"
+            value={currentUserData?.keyData?.lipidCount + "g" || ""}
+          />
+        </div>
+      </div>
     </div>
   );
 }
