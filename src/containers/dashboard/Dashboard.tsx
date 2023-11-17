@@ -3,12 +3,14 @@ import { USER_MAIN_DATA_MOCKED } from "../../mocks/mockUserMainData";
 import Welcome from "./widgets/Welcome";
 import {
   fetchUserActivity,
+  fetchUserAverageSessions,
   fetchUserMainData,
   fetchUserPerformance,
 } from "../../services/api";
 import {
   User,
   UserActivity,
+  UserAverageSession,
   UserPerformance,
   UserSchema,
 } from "../../schema/userSchema";
@@ -28,6 +30,10 @@ function Dashboard() {
   );
   const [userPerformance, setUserPerformance] = useState<
     UserPerformance | undefined
+  >(undefined);
+
+  const [userAverageSessions, setUserAverageSessions] = useState<
+    UserAverageSession | undefined
   >(undefined);
 
   const handleFetchUserData = async () => {
@@ -71,23 +77,38 @@ function Dashboard() {
   };
 
   const handleFetchUserPerformance = async () => {
-    if (checkMockedRoute()) {
-      console.log("mocked");
+    // add promise resolve with timeout for mocking loading
+    if (!currentUserData) {
+      return;
+    }
+    const parsedData = await fetchUserPerformance(
+      currentUserData.id,
+      checkMockedRoute()
+    );
+    if (parsedData && !parsedData.success) {
+      console.log("parsedData in error => ", parsedData);
+      console.error(parsedData.error);
+      return;
     } else {
-      // add promise resolve with timeout for mocking loading
-      if (!currentUserData) {
-        return;
-      }
-      const parsedData = await fetchUserPerformance(currentUserData.id);
-      if (parsedData && !parsedData.success) {
-        console.log("parsedData in error => ", parsedData);
-        console.error(parsedData.error);
-        return;
-      } else {
-        setUserPerformance(parsedData?.data);
-      }
+      setUserPerformance(parsedData?.data);
     }
   };
+
+  const handleFetchUserAverageSessions = async () => {
+    // add promise resolve with timeout for mocking loading
+    if (!currentUserData) {
+      return;
+    }
+    const parsedData = await fetchUserAverageSessions(currentUserData.id);
+    if (parsedData && !parsedData.success) {
+      console.log("parsedData in error => ", parsedData);
+      console.error(parsedData.error);
+      return;
+    } else {
+      setUserAverageSessions(parsedData?.data);
+    }
+  };
+
   useEffect(() => {
     handleFetchUserData();
   }, []);
@@ -96,6 +117,7 @@ function Dashboard() {
     if (currentUserData) {
       handleFetchUserActivity();
       handleFetchUserPerformance();
+      handleFetchUserAverageSessions();
     }
   }, [currentUserData]);
 
@@ -106,7 +128,7 @@ function Dashboard() {
         <div className="flex flex-col flex-[1_1_60%] xl:flex-auto h-full">
           <DailyActivity activityData={userActivity} />
           <div className="flex flex-col xl:flex-row justify-between mt-8">
-            <SessionDuration />
+            <SessionDuration userAverageSessions={userAverageSessions} />
             {userPerformance && (
               <Performance userPerformance={userPerformance} />
             )}

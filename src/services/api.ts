@@ -1,10 +1,14 @@
+import { USER_AVERAGE_SESSIONS_MOCKED } from "../mocks/mockAverageSessions";
 import {
   UserActivitySchema,
+  UserAverageSessionSchema,
   UserPerformanceSchema,
   UserSchema,
 } from "../schema/userSchema";
 
 const API_URL = "http://localhost:3000";
+const ID_FROM_URL = window.location.pathname.split("/").pop();
+
 export const fetchUserMainData = async (id: number) => {
   const response = await fetch(`${API_URL}/user/${id}`);
   const data = await response.json();
@@ -33,12 +37,34 @@ export const fetchUserActivity = async (id: number) => {
   return parsedData;
 };
 
-export const fetchUserPerformance = async (id: number) => {
+export const fetchUserPerformance = async (id: number, useMock: boolean) => {
   if (!id) {
     return null;
   }
-  const response = await fetch(`${API_URL}/user/${id}/performance`);
+  let data: unknown = null;
+
+  if (useMock) {
+    data = USER_AVERAGE_SESSIONS_MOCKED.find(
+      (session) => session.userId === parseInt(ID_FROM_URL || "")
+    );
+  } else {
+    const response = await fetch(`${API_URL}/user/${id}/performance`);
+    const serializedResponse = await response.json();
+    data = serializedResponse.data;
+  }
+
+  const parsedData = UserPerformanceSchema.safeParse(data);
+  return parsedData;
+};
+
+export const fetchUserAverageSessions = async (id: number) => {
+  if (!id) {
+    return null;
+  }
+  const response = await fetch(`${API_URL}/user/${id}/average-sessions`);
   const serializedResponse = await response.json();
-  const parsedData = UserPerformanceSchema.safeParse(serializedResponse.data);
+  const parsedData = UserAverageSessionSchema.safeParse(
+    serializedResponse.data
+  );
   return parsedData;
 };
