@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { USER_MAIN_DATA_MOCKED } from "../../mocks/mockUserMainData";
 import Welcome from "./widgets/Welcome";
 import {
   fetchUserActivity,
@@ -12,9 +11,8 @@ import {
   UserActivity,
   UserAverageSession,
   UserPerformance,
-  UserSchema,
 } from "../../schema/userSchema";
-import { checkMockedRoute } from "../../helpers/usage";
+import { checkMockedRoute, getUserIDFromURL } from "../../helpers/usage";
 import InfoCard from "./widgets/InfoCard";
 import DailyActivity from "./widgets/DailyActivity";
 import SessionDuration from "./widgets/SessionLength";
@@ -37,47 +35,36 @@ function Dashboard() {
   >(undefined);
 
   const handleFetchUserData = async () => {
-    const idFromUrl = window.location.pathname.split("/").pop();
-    if (checkMockedRoute()) {
-      const data: unknown = USER_MAIN_DATA_MOCKED.find(
-        (user) => user.id === parseInt(idFromUrl || "")
-      );
-      const result = UserSchema.safeParse(data);
-      if (!result.success) {
-        console.error(result.error);
-        return;
-      }
-      setCurrentUserData(result.data);
-    } else {
-      const parsedData = await fetchUserMainData(parseInt(idFromUrl || ""));
-      if (!parsedData.success) {
-        console.error(parsedData.error);
-        return;
-      }
+    const parsedData = await fetchUserMainData(
+      getUserIDFromURL(),
+      checkMockedRoute()
+    );
+    if (parsedData && !parsedData.success) {
+      console.error(parsedData.error);
+      return;
+    }
+    if (parsedData && parsedData.data) {
       setCurrentUserData(parsedData.data);
     }
   };
 
   const handleFetchUserActivity = async () => {
-    if (checkMockedRoute()) {
-      console.log("mocked");
+    if (!currentUserData) {
+      return;
+    }
+    const parsedData = await fetchUserActivity(
+      currentUserData.id,
+      checkMockedRoute()
+    );
+    if (parsedData && !parsedData.success) {
+      console.error(parsedData.error);
+      return;
     } else {
-      // add promise resolve with timeout for mocking loading
-      if (!currentUserData) {
-        return;
-      }
-      const parsedData = await fetchUserActivity(currentUserData.id);
-      if (parsedData && !parsedData.success) {
-        console.error(parsedData.error);
-        return;
-      } else {
-        setUserActivity(parsedData?.data);
-      }
+      setUserActivity(parsedData?.data);
     }
   };
 
   const handleFetchUserPerformance = async () => {
-    // add promise resolve with timeout for mocking loading
     if (!currentUserData) {
       return;
     }
@@ -86,7 +73,6 @@ function Dashboard() {
       checkMockedRoute()
     );
     if (parsedData && !parsedData.success) {
-      console.log("parsedData in error => ", parsedData);
       console.error(parsedData.error);
       return;
     } else {
@@ -95,13 +81,14 @@ function Dashboard() {
   };
 
   const handleFetchUserAverageSessions = async () => {
-    // add promise resolve with timeout for mocking loading
     if (!currentUserData) {
       return;
     }
-    const parsedData = await fetchUserAverageSessions(currentUserData.id);
+    const parsedData = await fetchUserAverageSessions(
+      currentUserData.id,
+      checkMockedRoute()
+    );
     if (parsedData && !parsedData.success) {
-      console.log("parsedData in error => ", parsedData);
       console.error(parsedData.error);
       return;
     } else {

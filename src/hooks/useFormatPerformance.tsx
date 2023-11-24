@@ -6,6 +6,13 @@ type FormattedPerformanceType = {
   value: number;
 };
 
+/***
+ * @description This hook is used to format the performance data
+ * @param userPerformance
+ * @returns FormattedPerformanceType[] | undefined
+ * @example
+ * const formattedPerformance = useFormatPerformance(userPerformance);
+ */
 const useFormatPerformance = (userPerformance: UserPerformance | undefined) => {
   const [formattedPerformance, setFormattedPerformance] = useState<
     FormattedPerformanceType[] | undefined
@@ -31,7 +38,6 @@ const useFormatPerformance = (userPerformance: UserPerformance | undefined) => {
     return data as FormattedPerformanceType[];
   };
   useEffect(() => {
-    console.log("userPerformance", userPerformance);
     setFormattedPerformance(formatUserPerformanceData(userPerformance));
   }, [userPerformance]);
 
