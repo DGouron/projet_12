@@ -11,7 +11,6 @@ import {
 } from "../schema/userSchema";
 
 const API_URL = "http://localhost:3000";
-const ID_FROM_URL = window.location.pathname.split("/").pop();
 
 /***
  * @module services/api
@@ -32,20 +31,19 @@ export const fetchUserMainData = async (id: number, useMock: boolean) => {
     let data = null;
 
     if (useMock) {
-      data = USER_MAIN_DATA_MOCKED.find(
-        (user) => user.id === parseInt(ID_FROM_URL || "")
-      );
-      const sanitizedData = { ...data } as Partial<User>;
-      if ("score" in sanitizedData) {
-        sanitizedData.todayScore = sanitizedData.score as number;
-        delete sanitizedData.score;
-      }
-      data = sanitizedData;
+      data = USER_MAIN_DATA_MOCKED.find((user) => user.id === id);
     } else {
-      const response = await fetch(`${API_URL}/user/${id}/activity`);
+      const response = await fetch(`${API_URL}/user/${id}`);
       const serializedResponse = await response.json();
       data = serializedResponse.data;
     }
+
+    const sanitizedData = { ...data } as Partial<User>;
+    if ("score" in sanitizedData) {
+      sanitizedData.todayScore = sanitizedData.score as number;
+      delete sanitizedData.score;
+    }
+    data = sanitizedData;
 
     const parsedData = UserSchema.safeParse(data);
     return parsedData;
@@ -68,9 +66,7 @@ export const fetchUserActivity = async (id: number, useMock: boolean) => {
     let data: unknown = null;
 
     if (useMock) {
-      data = USER_ACTIVITY.find(
-        (activity) => activity.userId === parseInt(ID_FROM_URL || "")
-      );
+      data = USER_ACTIVITY.find((activity) => activity.userId === id);
     } else {
       const response = await fetch(`${API_URL}/user/${id}/activity`);
       const serializedResponse = await response.json();
@@ -93,7 +89,7 @@ export const fetchUserPerformance = async (id: number, useMock: boolean) => {
 
     if (useMock) {
       data = USER_PERFORMANCE_MOCKED.find(
-        (performance) => performance.userId === parseInt(ID_FROM_URL || "")
+        (performance) => performance.userId === id
       );
     } else {
       const response = await fetch(`${API_URL}/user/${id}/performance`);
@@ -120,8 +116,7 @@ export const fetchUserAverageSessions = async (
 
     if (useMock) {
       data = USER_AVERAGE_SESSIONS_MOCKED.find(
-        (averageSessions) =>
-          averageSessions.userId === parseInt(ID_FROM_URL || "")
+        (averageSessions) => averageSessions.userId === id
       );
     } else {
       const response = await fetch(`${API_URL}/user/${id}/average-sessions`);

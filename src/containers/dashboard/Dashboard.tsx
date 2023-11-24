@@ -12,14 +12,16 @@ import {
   UserAverageSession,
   UserPerformance,
 } from "../../schema/userSchema";
-import { checkMockedRoute, getUserIDFromURL } from "../../helpers/usage";
+import { checkMockedRoute } from "../../helpers/usage";
 import InfoCard from "./widgets/InfoCard";
 import DailyActivity from "./widgets/DailyActivity";
 import SessionDuration from "./widgets/SessionLength";
 import Performance from "./widgets/Performance";
 import AverageScore from "./widgets/AverageScore";
+import { useParams } from "react-router";
 
 function Dashboard() {
+  const id: number = parseInt(useParams().id || "0");
   const [currentUserData, setCurrentUserData] = useState<User | undefined>(
     undefined
   );
@@ -35,10 +37,7 @@ function Dashboard() {
   >(undefined);
 
   const handleFetchUserData = async () => {
-    const parsedData = await fetchUserMainData(
-      getUserIDFromURL(),
-      checkMockedRoute()
-    );
+    const parsedData = await fetchUserMainData(id, checkMockedRoute());
     if (parsedData && !parsedData.success) {
       console.error(parsedData.error);
       return;
@@ -46,16 +45,14 @@ function Dashboard() {
     if (parsedData && parsedData.data) {
       setCurrentUserData(parsedData.data);
     }
+
+    handleFetchUserActivity();
+    handleFetchUserPerformance();
+    handleFetchUserAverageSessions();
   };
 
   const handleFetchUserActivity = async () => {
-    if (!currentUserData) {
-      return;
-    }
-    const parsedData = await fetchUserActivity(
-      currentUserData.id,
-      checkMockedRoute()
-    );
+    const parsedData = await fetchUserActivity(id, checkMockedRoute());
     if (parsedData && !parsedData.success) {
       console.error(parsedData.error);
       return;
@@ -65,13 +62,7 @@ function Dashboard() {
   };
 
   const handleFetchUserPerformance = async () => {
-    if (!currentUserData) {
-      return;
-    }
-    const parsedData = await fetchUserPerformance(
-      currentUserData.id,
-      checkMockedRoute()
-    );
+    const parsedData = await fetchUserPerformance(id, checkMockedRoute());
     if (parsedData && !parsedData.success) {
       console.error(parsedData.error);
       return;
@@ -81,13 +72,7 @@ function Dashboard() {
   };
 
   const handleFetchUserAverageSessions = async () => {
-    if (!currentUserData) {
-      return;
-    }
-    const parsedData = await fetchUserAverageSessions(
-      currentUserData.id,
-      checkMockedRoute()
-    );
+    const parsedData = await fetchUserAverageSessions(id, checkMockedRoute());
     if (parsedData && !parsedData.success) {
       console.error(parsedData.error);
       return;
@@ -97,16 +82,9 @@ function Dashboard() {
   };
 
   useEffect(() => {
+    if (!id) return;
     handleFetchUserData();
-  }, []);
-
-  useEffect(() => {
-    if (currentUserData) {
-      handleFetchUserActivity();
-      handleFetchUserPerformance();
-      handleFetchUserAverageSessions();
-    }
-  }, [currentUserData]);
+  }, [id]);
 
   return (
     <div className="flex">
